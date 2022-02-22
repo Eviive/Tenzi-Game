@@ -1,0 +1,182 @@
+:root {
+	--background: hsl(217deg, 73%, 13%);
+	--main: hsl(0deg, 0%, 96%);
+	--white: hsl(0deg, 0%, 100%);
+	--green: hsl(144, 71%, 62%);
+	--purple: hsl(248deg, 100%, 60%);
+}
+
+html {
+	height: 100%;
+	font-size: 10px;
+}
+
+body {
+	min-width: 400px;
+	height: 100%;
+	margin: 0;
+	font-family: 'Karla', sans-serif;
+	font-size: 1.6rem;
+	background-color: var(--background);
+}
+
+#root {
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	
+}
+
+/***************main***************/
+
+main {
+	position: relative;
+	width: clamp(350px, 70%, 550px);
+	aspect-ratio: 1/1;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-evenly;
+	align-items: center;
+	border-radius: 7px;
+	background-color: var(--main);
+	box-shadow: 0 30px 60px -12px hsla(240deg, 30%, 14%, 0.25),
+				0 18px 36px -18px hsla(0deg, 0%, 0%, 0.5);
+}
+
+/***************text***************/
+
+.instructions {
+	text-align: center;
+	font-size: clamp(1.5rem, 2.5vw, 2rem);
+}
+
+.instructions h1 {
+    margin: 0;
+    font-size: 2em;
+}
+
+.instructions p {
+    margin-bottom: 0;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+	font-size: .75em;
+}
+
+/***************die***************/
+
+.wrapper-dice {
+	--gap: 5%;
+	width: 80%;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px var(--gap);
+	color: var(--background);
+	font-size: 3.5rem;
+	font-weight: 700;
+}
+
+.die {
+	aspect-ratio: 1/1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex: 0 1 calc(20% - var(--gap) * 4/5);
+	border-radius: 15px;
+	background-color: var(--white);
+	box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.15);
+	cursor: pointer;
+	user-select: none;
+	transition: transform .1s ease, background-color .3s ease;
+}
+
+.die:is(.d1, .d2, .d3, .d4, .d5, .d6) {
+	box-sizing: border-box;
+	padding: 8px;
+	display: grid;
+	place-items: center;
+	grid-template-areas: "a b c"
+						 "d e f"
+						 "g h i";
+	grid-auto-rows: 1fr;
+	grid-auto-columns: 1fr;
+}
+
+.die:active {
+	transform: scale(94%);
+}
+
+.die.held {
+	background-color: var(--green);
+}
+
+.die span {
+	width: 70%;
+	aspect-ratio: 1/1;
+	background-color: hsl(0deg, 0%, 0%);
+	border-radius: 50%;
+}
+
+:is(.d1, .d3, .d5) span {
+	grid-area: e;
+}
+
+.die:not(.d1) span:first-child {
+	grid-area: a;
+}
+
+:is(.d4, .d5, .d6) span:nth-child(2) {
+	grid-area: g;
+}
+
+:is(.d4, .d5, .d6) span:nth-child(3) {
+	grid-area: c;
+}
+
+.d6 span:nth-child(4) {
+	grid-area: d;
+}
+
+.d6 span:nth-child(5) {
+	grid-area: f;
+}
+
+.die:not(.d1) span:last-child {
+	grid-area: i;
+}
+
+/***************roll***************/
+
+.btn-roll {
+	width: 30%;
+	min-width: max-content;
+	padding: 15px;
+	color: var(--main);
+	font-family: inherit;
+	font-size: 2.5rem;
+	font-weight: 700;
+	white-space: nowrap;
+	border: 0;
+	border-radius: 7px;
+	background-color: var(--purple);
+	cursor: pointer;
+	transition: transform .1s ease;
+}
+
+.btn-roll:active {
+	transform: scale(97%);
+}
+
+/***************toggle design***************/
+
+.die:is(button) {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 10%;
+	color: var(--background);
+	font-size: 2.5rem;
+	font-weight: 700;
+	border: 0;
+	box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.25);
+}
