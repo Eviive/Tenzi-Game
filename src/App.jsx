@@ -1,10 +1,14 @@
 import React from "react";
 import Confetti from "react-confetti";
+import { useStopwatch } from "react-timer-hook";
 
 import Die from "./components/Die.jsx";
+import Scores from "./components/Scores.jsx";
 
 export default function App() {
 	let [tenzi, setTenzi] = React.useState(false);
+
+	let [rolls, setRolls] = React.useState(0);
 
 	let [design, setDesign] = React.useState(true);
 
@@ -26,6 +30,15 @@ export default function App() {
 		height: undefined
 	});
 
+	const {
+		seconds,
+		minutes,
+		isRunning,
+		start,
+		pause,
+		reset,
+	} = useStopwatch({ autoStart: false });
+
 	let windowDimensions = () => setWindowSize({
 		width: window.innerWidth,
 		height: window.innerHeight
@@ -43,22 +56,58 @@ export default function App() {
 		const verif = diceArray.every(dice => dice.isHeld && dice.value === firstValue);
 		if (verif) {
 			setTenzi(true);
+			pause();
+			let prevBestScores = JSON.parse(localStorage.getItem("bestScores"));
+			if (!prevBestScores) {
+				localStorage.setItem("bestScores", JSON.stringify(
+				{
+					bestRolls: {
+						minutes: minutes,
+						seconds: seconds,
+						rolls: rolls
+					},
+					bestTime: {
+						minutes: minutes,
+						seconds: seconds,
+						rolls: rolls
+					}
+				}));
+			} else {
+				let verifModif = false;
+				const currentScores = {
+					minutes: minutes,
+					seconds: seconds,
+					rolls: rolls
+				}
+				let currentTime = minutes * 60 + seconds;
+				if (prevBestScores.bestRolls.rolls > currentScores.rolls) {
+					prevBestScores.bestRolls = currentScores;
+					verifModif = true;
+				}
+				if (prevBestScores.bestTime.minutes * 60 + prevBestScores.bestTime.seconds > currentTime) {
+					prevBestScores.bestTime = currentScores;
+					verifModif = true;
+				}
+				if (verifModif) {
+					localStorage.setItem("bestScores", JSON.stringify(prevBestScores));
+				}
+			}
 		}
 	}, [diceArray]);
 
 	function randomNumbers() {
 		let randArray = [];
 		for (let i = 0; i < 10; i++) {
-			let randNb = Math.floor(Math.random() * 6 + 1);
-			// do {
-			// 	randNb = Math.floor(Math.random() * 6 + 1);
-			// } while (randNb == diceArray[i].value);
+			const randNb = Math.floor(Math.random() * 6 + 1);
 			randArray.push(randNb);
 		}
 		return randArray;
 	}
 
 	function selectDice(dieId) {
+		if (rolls === 0 && !isRunning) {
+			start();
+		}
 		if (!tenzi) {
 			setDiceArray(prevDiceArray => 
 				prevDiceArray.map(prevDice => 
@@ -71,6 +120,10 @@ export default function App() {
 	}
 
 	function rollDice() {
+		if (rolls === 0 && !isRunning) {
+			start();
+		}
+		setRolls(prevRolls => prevRolls + 1);
 		let values = randomNumbers();
 		setDiceArray(prevDiceArray =>
 			prevDiceArray.map(prevDice =>
@@ -83,6 +136,8 @@ export default function App() {
 
 	function newGame() {
 		setTenzi(false);
+		setRolls(0);
+		reset(0, false);
 		let values = randomNumbers();
 		setDiceArray(prevDiceArray =>
 			prevDiceArray.map(prevDice => ({
@@ -101,18 +156,6 @@ export default function App() {
 			design={design}
 		/>
 	);
-
-	function btnDesignContent() {
-		if (!design) {
-			return "5";
-		} else {
-			let dieFace = [];
-			for (let i = 0; i < 5; i++) {
-				dieFace.push(<span key={i}></span>);
-			}
-			return dieFace;
-		}
-	}
 	
 	return (
 		<>
@@ -138,12 +181,12 @@ export default function App() {
 				<button className="btn-roll" onClick={tenzi ? newGame : rollDice}>
 					{tenzi ? "New Game" : "Roll"}
 				</button>
-				<button
-					className={design ? "die d5" : "die"}
-					onClick={() => setDesign(prevDesign => !prevDesign)}
-				>
-					{btnDesignContent()}
-				</button>
+				<Scores
+					rolls={rolls}
+					design={design}
+					handleDesign={() => setDesign(prevDesign => !prevDesign)}
+					timer={`${minutes}:${seconds.toString().padStart(2, '0')}`}
+				/>
 			</main>
 		</>
 	);
