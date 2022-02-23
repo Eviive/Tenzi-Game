@@ -4,9 +4,23 @@ import { useStopwatch } from "react-timer-hook";
 
 import Die from "./components/Die.jsx";
 import Scores from "./components/Scores.jsx";
+import Popup from "./components/Popup.jsx";
 
 export default function App() {
 	let [tenzi, setTenzi] = React.useState(false);
+
+	let [highScore, setHighScore] = React.useState({
+		active: false,
+		type: {
+			rolls: false,
+			time: false
+		},
+		score: {
+			minutes: undefined,
+			seconds: undefined,
+			rolls: undefined
+		}
+	});
 
 	let [rolls, setRolls] = React.useState(0);
 
@@ -47,10 +61,11 @@ export default function App() {
 	React.useEffect(() => {
 		window.addEventListener("resize", windowDimensions);
 		windowDimensions();
+		localStorage.clear()
+
 		return () => window.removeEventListener("resize", windowDimensions);
 	}, []);
 
-	// useEffect is useful here because we have to keep two different states synced
 	React.useEffect(() => {
 		const firstValue = diceArray[0].value;
 		const verif = diceArray.every(dice => dice.isHeld && dice.value === firstValue);
@@ -58,37 +73,54 @@ export default function App() {
 			setTenzi(true);
 			pause();
 			let prevBestScores = JSON.parse(localStorage.getItem("bestScores"));
+			const currentScores = {
+				minutes: minutes,
+				seconds: seconds,
+				rolls: rolls
+			}
 			if (!prevBestScores) {
+				setHighScore({
+					active: true,
+					type: {
+						rolls: true,
+						time: true
+					},
+					score: currentScores
+				});
 				localStorage.setItem("bestScores", JSON.stringify(
 				{
-					bestRolls: {
-						minutes: minutes,
-						seconds: seconds,
-						rolls: rolls
-					},
-					bestTime: {
-						minutes: minutes,
-						seconds: seconds,
-						rolls: rolls
-					}
+					bestRolls: currentScores,
+					bestTime: currentScores
 				}));
 			} else {
-				let verifModif = false;
-				const currentScores = {
-					minutes: minutes,
-					seconds: seconds,
-					rolls: rolls
-				}
 				let currentTime = minutes * 60 + seconds;
 				if (prevBestScores.bestRolls.rolls > currentScores.rolls) {
 					prevBestScores.bestRolls = currentScores;
-					verifModif = true;
+					setHighScore({
+						active: true,
+						type: {
+							rolls: true,
+							time: false
+						},
+						score: currentScores
+					});
 				}
 				if (prevBestScores.bestTime.minutes * 60 + prevBestScores.bestTime.seconds > currentTime) {
 					prevBestScores.bestTime = currentScores;
-					verifModif = true;
+					setHighScore(prevHighScore => 
+						prevHighScore.type.rolls
+						? prevHighScore.type.time = true
+						: {
+							active: true,
+							type: {
+								rolls: false,
+								time: true
+							},
+							score: currentScores
+						}
+					);
 				}
-				if (verifModif) {
+				if (highScore) {
 					localStorage.setItem("bestScores", JSON.stringify(prevBestScores));
 				}
 			}
@@ -105,10 +137,10 @@ export default function App() {
 	}
 
 	function selectDice(dieId) {
-		if (rolls === 0 && !isRunning) {
-			start();
-		}
 		if (!tenzi) {
+			if (rolls === 0 && !isRunning) {
+				start();
+			}
 			setDiceArray(prevDiceArray => 
 				prevDiceArray.map(prevDice => 
 					prevDice.id === dieId
@@ -159,10 +191,16 @@ export default function App() {
 	
 	return (
 		<>
+			{highScore.active && <Popup
+						  	  	 	 handleClick={() => setHighScore(prevHighScore => !prevHighScore.active)}
+									 type={highScore.type}
+									 score={highScore.score}
+						  		 />
+			}
 			{tenzi && <Confetti
 						  {...windowSize}
-						  numberOfPieces={1750}
-						  tweenDuration={70000}
+						  numberOfPieces={1000}
+						  tweenDuration={60000}
 						  recycle={false}
 					  />
 			}

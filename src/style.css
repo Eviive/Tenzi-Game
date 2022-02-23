@@ -21,6 +21,7 @@ body {
 }
 
 #root {
+	position: relative;
 	height: 100%;
 	display: flex;
 	justify-content: center;
@@ -30,7 +31,8 @@ body {
 
 /***************main***************/
 
-main {
+main,
+.popup {
 	position: relative;
 	width: clamp(350px, 70%, 550px);
 	aspect-ratio: 1/1;
@@ -86,6 +88,7 @@ main {
 	box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.15);
 	cursor: pointer;
 	user-select: none;
+	-webkit-tap-highlight-color: transparent;
 	transition: transform .1s ease, background-color .3s ease;
 }
 
@@ -144,7 +147,8 @@ main {
 
 /***************roll***************/
 
-.btn-roll {
+.btn-roll,
+.btn-popup {
 	width: 20%;
 	min-width: max-content;
 	padding: .4em .5em;
@@ -158,14 +162,15 @@ main {
 	background-color: var(--purple);
 	box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
 	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
 	transition: transform .1s ease;
 }
 
-.btn-roll:active {
+:is(.btn-roll, .btn-popup):active {
 	transform: scale(97%);
 }
 
-.btn-roll:focus-visible {
+:is(.btn-roll, .btn-popup):focus-visible {
 	outline: 2px solid black;
 	outline-offset: -1px;
 }
@@ -186,6 +191,8 @@ main {
 	flex: 1 1 50%;
 	font-family: monospace;
 	font-size: 1.2em;
+	pointer-events: none;
+	user-select: none;
 }
 
 .scores h3 {
@@ -193,6 +200,8 @@ main {
 	font-size: 2em;
 	text-align: center;
 	flex: 1 0 5ch;
+	pointer-events: none;
+	user-select: none;
 }
 
 .wrapper-design {
@@ -200,7 +209,7 @@ main {
 }
 
 .die:is(button) {
-	width: max(38px, 22%);	
+	width: max(38px, 26%);	
 	margin-left: auto;
 	color: var(--background);
 	font-family: inherit;
@@ -213,4 +222,46 @@ main {
 .die:is(button):focus-visible {
 	outline: 2px solid black;
 	outline-offset: -1px;
+}
+
+/***************popup***************/
+
+.popup {
+	z-index: 3;
+	position: absolute;
+	width: clamp(296px, 57%, 450px);
+	justify-content: center;
+	gap: 8%;
+	font-size: clamp(1.2rem, 2vw, 1.6rem);
+	box-shadow: 0px 3px 15px hsla(0, 0%, 0%, 0.3);
+	text-align: center;
+	animation: popup 1s ease;
+}
+
+@keyframes popup {
+	from {
+		opacity: 0;
+		transform: scale(0%);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(100%);
+	}
+}
+
+.popup h2 {
+	margin: .5em 0;
+}
+
+.popup .best-score {
+	font-weight: normal;
+}
+
+.popup h3 {
+	font-size: 1.45em;
+}
+
+.btn-popup {
+	padding: .6em 1em;
 }
