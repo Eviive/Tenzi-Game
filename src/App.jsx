@@ -7,20 +7,14 @@ import Scores from "./components/Scores.jsx";
 import Popup from "./components/Popup.jsx";
 
 export default function App() {
-	let [tenzi, setTenzi] = React.useState(false);
-
-	let [highScore, setHighScore] = React.useState({
-		active: false,
-		type: {
+	const tenziDefault = {
+		win: false,
+		popup: {
 			rolls: false,
 			time: false
-		},
-		score: {
-			minutes: undefined,
-			seconds: undefined,
-			rolls: undefined
 		}
-	});
+	};
+	let [tenzi, setTenzi] = React.useState(tenziDefault);
 
 	let [rolls, setRolls] = React.useState(0);
 
@@ -61,8 +55,6 @@ export default function App() {
 	React.useEffect(() => {
 		window.addEventListener("resize", windowDimensions);
 		windowDimensions();
-		localStorage.clear()
-
 		return () => window.removeEventListener("resize", windowDimensions);
 	}, []);
 
@@ -70,60 +62,31 @@ export default function App() {
 		const firstValue = diceArray[0].value;
 		const verif = diceArray.every(dice => dice.isHeld && dice.value === firstValue);
 		if (verif) {
-			setTenzi(true);
 			pause();
-			let prevBestScores = JSON.parse(localStorage.getItem("bestScores"));
-			const currentScores = {
-				minutes: minutes,
-				seconds: seconds,
-				rolls: rolls
-			}
-			if (!prevBestScores) {
-				setHighScore({
-					active: true,
-					type: {
-						rolls: true,
-						time: true
-					},
-					score: currentScores
-				});
-				localStorage.setItem("bestScores", JSON.stringify(
-				{
-					bestRolls: currentScores,
-					bestTime: currentScores
+			let prevBestRolls = JSON.parse(localStorage.getItem("bestRolls"));
+			let prevBestTime = JSON.parse(localStorage.getItem("bestTime"));
+			const currentRolls = rolls
+			const currentTime = minutes * 60 + seconds
+			let popup = {
+				rolls: false,
+				time: false
+			};
+			if (!prevBestRolls || prevBestRolls.rolls > currentRolls) {
+				localStorage.setItem("bestRolls", JSON.stringify({
+					rolls: currentRolls
 				}));
-			} else {
-				let currentTime = minutes * 60 + seconds;
-				if (prevBestScores.bestRolls.rolls > currentScores.rolls) {
-					prevBestScores.bestRolls = currentScores;
-					setHighScore({
-						active: true,
-						type: {
-							rolls: true,
-							time: false
-						},
-						score: currentScores
-					});
-				}
-				if (prevBestScores.bestTime.minutes * 60 + prevBestScores.bestTime.seconds > currentTime) {
-					prevBestScores.bestTime = currentScores;
-					setHighScore(prevHighScore => 
-						prevHighScore.type.rolls
-						? prevHighScore.type.time = true
-						: {
-							active: true,
-							type: {
-								rolls: false,
-								time: true
-							},
-							score: currentScores
-						}
-					);
-				}
-				if (highScore) {
-					localStorage.setItem("bestScores", JSON.stringify(prevBestScores));
-				}
+				popup.rolls = true;
 			}
+			if (!prevBestTime || prevBestTime.time > currentTime) {
+				localStorage.setItem("bestTime", JSON.stringify({
+					time: currentTime
+				}));
+				popup.time = true;
+			}
+			setTenzi({
+				win: true,
+				popup
+			});
 		}
 	}, [diceArray]);
 
@@ -137,7 +100,7 @@ export default function App() {
 	}
 
 	function selectDice(dieId) {
-		if (!tenzi) {
+		if (!tenzi.win) {
 			if (rolls === 0 && !isRunning) {
 				start();
 			}
@@ -167,7 +130,7 @@ export default function App() {
 	}
 
 	function newGame() {
-		setTenzi(false);
+		setTenzi(tenziDefault);
 		setRolls(0);
 		reset(0, false);
 		let values = randomNumbers();
@@ -191,13 +154,18 @@ export default function App() {
 	
 	return (
 		<>
-			{highScore.active && <Popup
-						  	  	 	 handleClick={() => setHighScore(prevHighScore => !prevHighScore.active)}
-									 type={highScore.type}
-									 score={highScore.score}
-						  		 />
+			{(tenzi.popup.rolls || tenzi.popup.time) &&
+				<Popup
+					handleClick={() => setTenzi(({
+						...tenziDefault,
+						win: true
+					}))}
+					type={tenzi.popup}
+					rolls={rolls}
+					time={minutes * 60 + seconds}
+				/>
 			}
-			{tenzi && <Confetti
+			{tenzi.win && <Confetti
 						  {...windowSize}
 						  numberOfPieces={1000}
 						  tweenDuration={60000}
@@ -216,8 +184,8 @@ export default function App() {
 				<div className="wrapper-dice">
 					{diceElements}
 				</div>
-				<button className="btn-roll" onClick={tenzi ? newGame : rollDice}>
-					{tenzi ? "New Game" : "Roll"}
+				<button className="btn-roll" onClick={tenzi.win ? newGame : rollDice}>
+					{tenzi.win ? "New Game" : "Roll"}
 				</button>
 				<Scores
 					rolls={rolls}

@@ -5,22 +5,22 @@ export default function Popup(props) {
 	if (props.type.rolls && props.type.time) {
 		text = {
 			title: "Best time and rolls score :",
-			sub: `You won with ${props.score.rolls} rolls in ${props.score.minutes > 0
-				? `${props.score.minutes}:${props.score.seconds} minutes`
-				: `${props.score.seconds} seconds`
+			sub: `You won with ${props.rolls} rolls in ${props.time >= 60
+				? `${Math.floor(props.time / 60)}:${props.time % 60} minutes`
+				: `${props.time} seconds`
 			}`
 		};
 	} else if (props.type.rolls) {
 		text = {
 			title: "Best rolls score :",
-			sub: `You won in ${props.score.rolls} rolls`
+			sub: `You won in ${props.rolls} rolls`
 		};
 	} else {
 		text = {
 			title: "Best time score :",
-			sub: `You won in ${props.score.minutes > 0
-				? `${props.score.minutes}:${props.score.seconds} minutes`
-				: `${props.score.seconds} seconds`
+			sub: `You won in ${props.time >= 60
+				? `${Math.floor(props.time / 60)}:${props.time % 60} minutes`
+				: `${props.time} seconds`
 			}`
 		};
 	}

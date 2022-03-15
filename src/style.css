@@ -83,7 +83,7 @@ main,
 	display: grid;
 	place-items: center;
 	flex: 0 1 calc(20% - var(--gap) * 4/5);
-	border-radius: 15px;
+	border-radius: 10px;
 	background-color: var(--white);
 	box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.15);
 	cursor: pointer;
