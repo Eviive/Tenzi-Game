@@ -165,12 +165,13 @@ export default function App() {
 					time={minutes * 60 + seconds}
 				/>
 			}
-			{tenzi.win && <Confetti
-						  {...windowSize}
-						  numberOfPieces={1000}
-						  tweenDuration={60000}
-						  recycle={false}
-					  />
+			{tenzi.win &&
+				<Confetti
+					{...windowSize}
+					numberOfPieces={1000}
+					tweenDuration={60000}
+					recycle={false}
+				/>
 			}
 			<main>
 				<div className="instructions">
